@@ -2,11 +2,12 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import { motion } from 'framer-motion';
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   variant?: 'default' | 'glass';
   animate?: boolean;
+  onClick?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -14,7 +15,8 @@ const Card: React.FC<CardProps> = ({
   className,
   variant = 'default',
   animate = false,
-}) => {
+  onClick,
+  }) => {
   const baseStyles = 'rounded-2xl p-6 shadow-lg';
   
   const variantStyles = {
@@ -35,6 +37,7 @@ const Card: React.FC<CardProps> = ({
     <WrapperComponent
       className={twMerge(baseStyles, variantStyles[variant], className)}
       {...animationProps}
+      onClick={onClick}
     >
       {children}
     </WrapperComponent>
