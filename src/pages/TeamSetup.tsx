@@ -78,7 +78,6 @@ const TeamSetup: React.FC = () => {
                   fullWidth
                   error={errors.team1}
                 />
-                
                 <Input
                   label="Team 2 Name"
                   value={team2Name}

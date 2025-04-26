@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Timer, Users2, User } from 'lucide-react';
@@ -17,7 +17,7 @@ const GameSetup: React.FC = () => {
   const [errors, setErrors] = useState<{overs?: string; players?: string}>({});
   
   // For custom mode player setup
-  const [playerSetup, setPlayerSetup] = useState<{
+  const [, setPlayerSetup] = useState<{
     name: string;
     role: PlayerRole;
   }>({
@@ -25,8 +25,13 @@ const GameSetup: React.FC = () => {
     role: 'Batsman'
   });
   
+  useEffect(() => {
+    if (!currentMatch) {
+      navigate('/team-setup');
+    }
+  }, [currentMatch, navigate]);
+  
   if (!currentMatch) {
-    navigate('/team-setup');
     return null;
   }
   

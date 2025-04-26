@@ -18,6 +18,7 @@ interface GameState {
   addPlayer: (team: Team, name: string, role: PlayerRole) => void;
   updatePlayer: (player: Player) => void;
   createMatch: (teams: Team[], overs: number) => void;
+  initializeMatchWithTeam: (team: Team) => void;
   
   // Match Progress actions
   setTossResult: (winner: string, choice: 'bat' | 'bowl') => void;
@@ -63,20 +64,59 @@ const useGameStore = create<GameState>()(
           }
         }
         
+        // Initialize or update currentMatch with the new team
+        get().initializeMatchWithTeam(team);
+        
         return team;
+      },
+      
+      initializeMatchWithTeam: (team) => {
+        const currentMatch = get().currentMatch;
+        
+        if (!currentMatch) {
+          // First team - create new match
+          set({
+            currentMatch: {
+              id: generateId(),
+              date: new Date(),
+              teams: [team],
+              totalOvers: 20, // Default value, will be updated later
+              innings: [],
+              currentInnings: 0,
+              inProgress: true
+            }
+          });
+        } else {
+          // Second team - update existing match
+          set({
+            currentMatch: {
+              ...currentMatch,
+              teams: [...currentMatch.teams, team]
+            }
+          });
+        }
       },
       
       updateTeam: (team) => {
         if (!get().currentMatch) return;
         
-        const teams = get().currentMatch.teams.map(t => 
+        const teams = get().currentMatch!.teams.map(t => 
           t.id === team.id ? team : t
         );
         
         set({
           currentMatch: {
-            ...get().currentMatch,
-            teams
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: get().currentMatch!.currentInnings,
+            inProgress: get().currentMatch!.inProgress,
+            innings: get().currentMatch!.innings,
+            venue: get().currentMatch!.venue,
+            tossWinner: get().currentMatch!.tossWinner,
+            tossChoice: get().currentMatch!.tossChoice,
+            result: get().currentMatch!.result
           }
         });
       },
@@ -100,7 +140,7 @@ const useGameStore = create<GameState>()(
       updatePlayer: (player) => {
         if (!get().currentMatch) return;
         
-        const teams = get().currentMatch.teams.map(team => {
+        const teams = get().currentMatch!.teams.map(team => {
           if (team.id === player.team) {
             return {
               ...team,
@@ -114,8 +154,17 @@ const useGameStore = create<GameState>()(
         
         set({
           currentMatch: {
-            ...get().currentMatch,
-            teams
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: get().currentMatch!.currentInnings,
+            inProgress: get().currentMatch!.inProgress,
+            innings: get().currentMatch!.innings,
+            venue: get().currentMatch!.venue,
+            tossWinner: get().currentMatch!.tossWinner,
+            tossChoice: get().currentMatch!.tossChoice,
+            result: get().currentMatch!.result
           }
         });
       },
@@ -142,11 +191,11 @@ const useGameStore = create<GameState>()(
         
         const battingTeamId = choice === 'bat' 
           ? winner 
-          : get().currentMatch.teams.find(t => t.id !== winner)?.id;
+          : get().currentMatch!.teams.find(t => t.id !== winner)?.id;
           
         const bowlingTeamId = choice === 'bowl' 
           ? winner 
-          : get().currentMatch.teams.find(t => t.id !== winner)?.id;
+          : get().currentMatch!.teams.find(t => t.id !== winner)?.id;
         
         if (!battingTeamId || !bowlingTeamId) return;
         
@@ -172,11 +221,17 @@ const useGameStore = create<GameState>()(
         
         set({
           currentMatch: {
-            ...get().currentMatch,
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams: get().currentMatch!.teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: 0,
+            inProgress: get().currentMatch!.inProgress,
+            innings: [innings],
+            venue: get().currentMatch!.venue,
             tossWinner: winner,
             tossChoice: choice,
-            innings: [innings],
-            currentInnings: 0
+            result: get().currentMatch!.result
           }
         });
       },
@@ -193,13 +248,22 @@ const useGameStore = create<GameState>()(
           nonStriker
         };
         
-        const allInnings = [...get().currentMatch.innings];
-        allInnings[get().currentMatch.currentInnings] = updatedInnings;
+        const allInnings = [...get().currentMatch!.innings];
+        allInnings[get().currentMatch!.currentInnings] = updatedInnings;
         
         set({
           currentMatch: {
-            ...get().currentMatch,
-            innings: allInnings
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams: get().currentMatch!.teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: get().currentMatch!.currentInnings,
+            inProgress: get().currentMatch!.inProgress,
+            innings: allInnings,
+            venue: get().currentMatch!.venue,
+            tossWinner: get().currentMatch!.tossWinner,
+            tossChoice: get().currentMatch!.tossChoice,
+            result: get().currentMatch!.result
           }
         });
       },
@@ -224,11 +288,17 @@ const useGameStore = create<GameState>()(
             currentBowler: bowler
           };
           
-          const allInnings = [...get().currentMatch.innings];
-          allInnings[get().currentMatch.currentInnings] = updatedInnings;
+          const allInnings = [...get().currentMatch!.innings];
+          allInnings[get().currentMatch!.currentInnings] = updatedInnings;
           
           set({
             currentMatch: {
+              id: get().currentMatch!.id,
+              date: get().currentMatch!.date,
+              teams: get().currentMatch!.teams,
+              totalOvers: get().currentMatch!.totalOvers,
+              currentInnings: get().currentMatch!.currentInnings,
+              inProgress: get().currentMatch!.inProgress,
               ...get().currentMatch,
               innings: allInnings
             }
@@ -240,11 +310,17 @@ const useGameStore = create<GameState>()(
             currentBowler: bowler
           };
           
-          const allInnings = [...get().currentMatch.innings];
-          allInnings[get().currentMatch.currentInnings] = updatedInnings;
+          const allInnings = [...get().currentMatch!.innings];
+          allInnings[get().currentMatch!.currentInnings] = updatedInnings;
           
           set({
             currentMatch: {
+              id: get().currentMatch!.id,
+              date: get().currentMatch!.date,
+              teams: get().currentMatch!.teams,
+              totalOvers: get().currentMatch!.totalOvers,
+              currentInnings: get().currentMatch!.currentInnings,
+              inProgress: get().currentMatch!.inProgress,
               ...get().currentMatch,
               innings: allInnings
             }
@@ -425,11 +501,17 @@ const useGameStore = create<GameState>()(
           extras: innings.extras
         };
         
-        const allInnings = [...get().currentMatch.innings];
-        allInnings[get().currentMatch.currentInnings] = updatedInnings;
+        const allInnings = [...get().currentMatch!.innings];
+        allInnings[get().currentMatch!.currentInnings] = updatedInnings;
         
         set({
           currentMatch: {
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams: get().currentMatch!.teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: get().currentMatch!.currentInnings,
+            inProgress: get().currentMatch!.inProgress,
             ...get().currentMatch,
             innings: allInnings
           }
@@ -457,11 +539,17 @@ const useGameStore = create<GameState>()(
           currentBowler: null // This will be set when selecting the next bowler
         };
         
-        const allInnings = [...get().currentMatch.innings];
-        allInnings[get().currentMatch.currentInnings] = updatedInnings;
+        const allInnings = [...get().currentMatch!.innings];
+        allInnings[get().currentMatch!.currentInnings] = updatedInnings;
         
         set({
           currentMatch: {
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams: get().currentMatch!.teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: get().currentMatch!.currentInnings,
+            inProgress: get().currentMatch!.inProgress,
             ...get().currentMatch,
             innings: allInnings
           }
@@ -472,7 +560,7 @@ const useGameStore = create<GameState>()(
         if (!get().currentMatch) return;
         
         // Check if we can start second innings
-        if (get().currentMatch.currentInnings === 0) {
+        if (get().currentMatch!.currentInnings === 0) {
           // Swap batting and bowling teams
           const currentInnings = get().getCurrentInnings();
           if (!currentInnings) return;
@@ -499,9 +587,17 @@ const useGameStore = create<GameState>()(
           
           set({
             currentMatch: {
-              ...get().currentMatch,
-              innings: [...get().currentMatch.innings, newInnings],
-              currentInnings: 1
+              id: get().currentMatch!.id,
+              date: get().currentMatch!.date,
+              teams: get().currentMatch!.teams,
+              totalOvers: get().currentMatch!.totalOvers,
+              currentInnings: 1,
+              inProgress: get().currentMatch!.inProgress,
+              innings: [...get().currentMatch!.innings, newInnings],
+              venue: get().currentMatch!.venue,
+              tossWinner: get().currentMatch!.tossWinner,
+              tossChoice: get().currentMatch!.tossChoice,
+              result: get().currentMatch!.result
             }
           });
         } else {
@@ -515,9 +611,17 @@ const useGameStore = create<GameState>()(
         
         set({
           currentMatch: {
-            ...get().currentMatch,
-            result,
-            inProgress: false
+            id: get().currentMatch!.id,
+            date: get().currentMatch!.date,
+            teams: get().currentMatch!.teams,
+            totalOvers: get().currentMatch!.totalOvers,
+            currentInnings: get().currentMatch!.currentInnings,
+            inProgress: false,
+            innings: get().currentMatch!.innings,
+            venue: get().currentMatch!.venue,
+            tossWinner: get().currentMatch!.tossWinner,
+            tossChoice: get().currentMatch!.tossChoice,
+            result
           }
         });
       },
