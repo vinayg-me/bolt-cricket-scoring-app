@@ -13,7 +13,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Select from "../components/ui/Select";
 import useGameStore from "../store";
-import { formatOvers, calculateRunRate, getPlayerById } from "../utils/helpers";
+import { calculateRunRate, getPlayerById, formatBallNumber, formatOvers } from "../utils/helpers";
 import { BallEvent } from "../types";
 
 type WicketType =
@@ -216,8 +216,7 @@ const ScoringScreen: React.FC = () => {
               <div className="text-3xl font-bold flex items-baseline">
                 {innings.totalRuns}/{innings.totalWickets}
                 <span className="text-lg text-white/60 ml-2">
-                  ({formatOvers(innings.currentOver + innings.currentBall / 10)}
-                  )
+                  ({formatBallNumber(innings.currentOver, innings.currentBall)})
                 </span>
               </div>
             </div>
@@ -284,7 +283,7 @@ const ScoringScreen: React.FC = () => {
             <div className="flex items-center justify-between text-sm">
               <div>
                 <span className="font-medium">
-                  {bowler.bowling?.overs || 0}-{bowler.bowling?.maidens || 0}-
+                  {formatOvers(bowler.bowling?.overs || 0)}-{bowler.bowling?.maidens || 0}-
                   {bowler.bowling?.runs || 0}-{bowler.bowling?.wickets || 0}
                 </span>
               </div>

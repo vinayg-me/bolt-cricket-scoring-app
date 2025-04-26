@@ -7,6 +7,8 @@ export interface Player {
   role: PlayerRole;
   batting?: BattingStats;
   bowling?: BowlingStats;
+  isOut?: boolean;
+  isCurrentBowler?: boolean;
 }
 
 export interface Team {
