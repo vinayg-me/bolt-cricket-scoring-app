@@ -1,3 +1,5 @@
+import { Team } from "../types";
+
 /**
  * Generate a unique ID
  */
@@ -52,12 +54,14 @@ export const formatBallNumber = (over: number, ball: number): string => {
  * Get player by ID
  */
 export const getPlayerById = (
-  teams: { players: { id: string }[] }[],
+  teams: Team[],
   playerId: string
 ) => {
   for (const team of teams) {
     const player = team.players.find(p => p.id === playerId);
-    if (player) return player;
+    if (player){
+      return player;
+    }
   }
   return null;
 };
